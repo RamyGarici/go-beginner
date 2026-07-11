@@ -21,6 +21,7 @@ func createTask(taskName string)error{
 
 	}
 	taskList = append(taskList, newTask)
+	fmt.Println("Task successfully added")
     return nil
 
 
@@ -33,17 +34,19 @@ var taskList = make([]Task,0)
 func main(){
 	scanner:= bufio.NewScanner(os.Stdin)
 for{
-	var i int
 	fmt.Println("Welcome to your ToDo list")
 	fmt.Println("Enter 1 to create a task")
 	fmt.Println("Enter 2 to list tasks")
 	fmt.Println("Enter 3 to delete a task")
 	fmt.Println("Enter 4 to mark a finished task")
 	fmt.Println("Enter 5 to stop the program")
-	fmt.Scan(&i)
+	if !scanner.Scan(){
+		continue
+	}
+	i := scanner.Text()
     switch i {
-	    case 1:
-			fmt.Println("Enter your task name")
+	    case "1":
+			fmt.Println("Enter your task name:")
 			var taskName string
 			scan := scanner.Scan()
 			if scan == false{
@@ -53,13 +56,13 @@ for{
 			taskName = scanner.Text()
 			createTask((taskName))
 			
-		case 2:
+		case "2":
 			fmt.Println("Task list")
-		case 3:
+		case "3":
 			fmt.Println("Which task do you want to delete?")
-		case 4:
+		case "4":
 			fmt.Println("Which task do you want to mark as finished?")
-		case 5:
+		case "5":
 			fmt.Println("Thank you!")
 			os.Exit(0)
 		default:
