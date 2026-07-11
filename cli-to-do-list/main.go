@@ -28,6 +28,18 @@ func createTask(taskName string)error{
 }
 
 
+func listTask(){
+	for _,task := range taskList{
+		statut :=""
+		if task.Done{
+			statut = "X"
+		}
+		fmt.Printf("%d - %s [%s] (Created at: %s)\n",task.ID,task.Name,statut,task.CreatedAt.Format("2006-01-02 15:04"))
+
+	}
+}
+
+
 var taskList = make([]Task,0)
 
 
@@ -57,7 +69,8 @@ for{
 			createTask((taskName))
 			
 		case "2":
-			fmt.Println("Task list")
+			fmt.Println("Task list:")
+			listTask()
 		case "3":
 			fmt.Println("Which task do you want to delete?")
 		case "4":
