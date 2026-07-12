@@ -1,10 +1,14 @@
 package main
-import ("time"
-"fmt"
-"os"
-"bufio"
-"strconv"
-"slices")
+
+import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"os"
+	"slices"
+	"strconv"
+	"time"
+)
 
 type Task struct{
     ID int `json:"id"`
@@ -13,6 +17,7 @@ type Task struct{
 	CreatedAt time.Time `json:"created_at"`
 	
 }
+
 
 func createTask(taskName string)error{
 	newTask := Task{
@@ -65,7 +70,7 @@ func deleteTask(taskID int){
 
 	for i:=0;i<len(taskList);i++{
 		if taskList[i].ID == taskID{
-			taskList=slices.Delete(taskList,i,i)
+			taskList=slices.Delete(taskList,i,i+1)
 			fmt.Println("Task deleted!")
 			found = true
 			break
@@ -75,14 +80,50 @@ func deleteTask(taskID int){
 		fmt.Println("This task doesn't exist")
 	}}
 
+func saveTasks()error{
+	
+		JSON, err := json.MarshalIndent(taskList, "", "\t")
+		if err != nil{
+			return err
+		}
+		os.WriteFile("tasks.json",JSON,0644)
+	
+	return nil
+
+}
+
+func loadTasks()([]Task,error){
+	   taskList :=make([]Task,0)
+	   data, err := os.ReadFile("tasks.json")
+	   if err!=nil{
+		return nil,err
+	   }
+	    err = json.Unmarshal(data,&taskList)
+		if err != nil{
+			return nil,err
+		}
+		
+	
+	return taskList,nil
+}
+
+
+ var taskList =make([]Task,0)
 
 
 
 
-var taskList = make([]Task,0)
 
 
 func main(){
+	var err error
+	taskList,err = loadTasks()
+	if err!=nil{
+		fmt.Println("Error loading file")
+
+	}
+	
+
 	scanner:= bufio.NewScanner(os.Stdin)
 for{
 	fmt.Println("Welcome to your ToDo list")
@@ -106,6 +147,7 @@ for{
 			}
 			taskName = scanner.Text()
 			createTask((taskName))
+			saveTasks()
 			
 		case "2":
 			fmt.Println("Task list:")
@@ -125,6 +167,7 @@ for{
 				
 			}
 			deleteTask((taskID))
+			saveTasks()
 		case "4":
 			fmt.Println("Which task do you want to mark as finished?")
 			listTask()
@@ -140,6 +183,7 @@ for{
 				
 			}
 			markTask((taskID))
+			saveTasks()
 
 			
 		case "5":
