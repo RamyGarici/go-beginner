@@ -2,7 +2,9 @@ package main
 import ("time"
 "fmt"
 "os"
-"bufio")
+"bufio"
+"strconv"
+"slices")
 
 type Task struct{
     ID int `json:"id"`
@@ -39,6 +41,43 @@ func listTask(){
 	}
 }
 
+func markTask(taskID int){
+	found := false
+
+
+	for i:=0;i<len(taskList);i++{
+		if taskList[i].ID == taskID{
+			taskList[i].Done = true
+			found = true
+			break
+		}
+	}
+	if !found{
+		fmt.Println("This task doesn't exist")
+	}
+
+
+
+}
+func deleteTask(taskID int){
+	found := false
+
+
+	for i:=0;i<len(taskList);i++{
+		if taskList[i].ID == taskID{
+			taskList=slices.Delete(taskList,i,i)
+			fmt.Println("Task deleted!")
+			found = true
+			break
+		}
+	}
+	if !found{
+		fmt.Println("This task doesn't exist")
+	}}
+
+
+
+
 
 var taskList = make([]Task,0)
 
@@ -73,8 +112,36 @@ for{
 			listTask()
 		case "3":
 			fmt.Println("Which task do you want to delete?")
+			listTask()
+			
+			scan := scanner.Scan()
+			if scan == false{
+				fmt.Printf("%v",scanner.Err())
+				continue
+			}
+			taskID,err := strconv.Atoi(scanner.Text())
+			if err!=nil{
+				fmt.Printf("%v",err)
+				
+			}
+			deleteTask((taskID))
 		case "4":
 			fmt.Println("Which task do you want to mark as finished?")
+			listTask()
+			
+			scan := scanner.Scan()
+			if scan == false{
+				fmt.Printf("%v",scanner.Err())
+				continue
+			}
+			taskID,err := strconv.Atoi(scanner.Text())
+			if err!=nil{
+				fmt.Printf("%v",err)
+				
+			}
+			markTask((taskID))
+
+			
 		case "5":
 			fmt.Println("Thank you!")
 			os.Exit(0)
