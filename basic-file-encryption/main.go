@@ -9,6 +9,32 @@ import("os"
 
 
 func main(){
+	key := []byte("12345678901234567890123456789012")
+	file, err := os.ReadFile("secret.txt")
+	if err!=nil{
+		fmt.Printf("Error: %v\n",err)
+		os.Exit(1)
+	}
+	encryptedFile,err := aesEncryption(key,file)
+	if err!=nil{
+		fmt.Printf("Error:%v\n",err)
+		os.Exit(1)
+	}
+	err=os.WriteFile("secret.txt.enc",encryptedFile,0644)
+	if err!=nil{
+		fmt.Printf("Error:%v\n",err)
+		os.Exit(1)
+	}
+	decryptedFile,err := aesDecryption(key, encryptedFile)
+	if err!=nil{
+		fmt.Printf("Error:%v\n",err)
+		os.Exit(1)
+	}
+	err=os.WriteFile("secret.txt",decryptedFile,0644)
+	if err!=nil{
+		fmt.Printf("Error:%v\n",err)
+		os.Exit(1)
+	}
 
 
 
@@ -32,7 +58,7 @@ func main(){
 	// file, err := os.ReadFile("secret.txt")
 	// if err!=nil{
 	// 	fmt.Printf("Error:%v\n",err)
-	// 	os.Exit(0)
+	// 	os.Exit(1)
 
 	// }
 	// encryptedFile := xorEncoding(key,file)
@@ -42,7 +68,7 @@ func main(){
 	// file, err = os.ReadFile("secret.txt.enc")
 	// if err!=nil{
 	// 	fmt.Printf("Error:%v\n",err)
-	// 	os.Exit(0)
+	// 	os.Exit(1)
 
 	// }
 	// decryptedFile := xorEncoding(key,file)
@@ -71,13 +97,31 @@ func aesEncryption(key []byte, data []byte)([]byte,error){
 	}
 	encryptedFile := aesGCM.Seal(nonce,nonce,data,nil)
 	return encryptedFile, nil
-	
-	
-
-
-
-
 }
+
+func aesDecryption(key []byte, data []byte)([]byte,error){
+	if len(data)<12{
+		return nil,fmt.Errorf("File data too short")
+	}
+	aesBlock,err := aes.NewCipher(key)
+	if err != nil{
+		fmt.Printf("Error: %v\n",err)
+		return nil,err
+	}
+	aesGCM,err := cipher.NewGCM(aesBlock)
+	if err != nil{
+		fmt.Printf("Error: %v\n",err)
+		return nil,err
+	}
+
+	decryptedFile,err := aesGCM.Open(nil,data[:12],data[12:],nil)
+	if err != nil{
+		fmt.Printf("Error: %v\n",err)
+		return nil,err
+	}
+	return decryptedFile, nil
+}
+
 
 
 
