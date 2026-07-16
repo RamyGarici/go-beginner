@@ -39,7 +39,10 @@ func uploadHandler(w http.ResponseWriter, r *http.Request){
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	fmt.Fprintf(w,"Filename: %v\nFile size: %v",header.Filename,len(fileData))
+
+	detectedType := http.DetectContentType(fileData)
+
+	fmt.Fprintf(w,"Filename: %v\nFile size: %v\nDetected Type:%v",header.Filename,len(fileData),detectedType)
 
 
 
