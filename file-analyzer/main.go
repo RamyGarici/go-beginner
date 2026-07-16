@@ -1,13 +1,17 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"net/http"
 	"io"
+	"net/http"
 )
 
 
 func main(){
+
+	
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/",homeHandler)
 	mux.HandleFunc("/upload",uploadHandler)
@@ -21,6 +25,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request){
 	fmt.Fprintln(w,"Home")
 }
 
+
 func uploadHandler(w http.ResponseWriter, r *http.Request){
 	if r.Method != "POST"{
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -33,18 +38,28 @@ func uploadHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	defer file.Close()
-	fmt.Fprintln(w,"File received successfully")
 	fileData, err := io.ReadAll(file)
 	if err!= nil{
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	detectedType := http.DetectContentType(fileData)
-
-	fmt.Fprintf(w,"Filename: %v\nFile size: %v\nDetected Type:%v",header.Filename,len(fileData),detectedType)
-
-
-
 	
+	
+	
+	resp := response{
+		Filename: header.Filename,
+		FileSize: len(fileData),
+		DetectedType : http.DetectContentType(fileData),
+	}
+	w.Header().Set("Content-Type","application/json")
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	encoder.Encode(resp)
 }
+
+type response struct{
+		Filename string `json:"filename"`
+		FileSize int    `json:"filesize"`
+		DetectedType string `json:"detected_type"`
+	}
