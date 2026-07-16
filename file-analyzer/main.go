@@ -5,16 +5,20 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 )
+
+
+var total_uploads, total_bytes int
+var mu sync.Mutex
 
 
 func main(){
 
-	
-
 	mux := http.NewServeMux()
 	mux.HandleFunc("/",homeHandler)
 	mux.HandleFunc("/upload",uploadHandler)
+	mux.HandleFunc("/stats",statsHandler)
 	http.ListenAndServe("localhost:8080",mux)
 
 
@@ -44,7 +48,11 @@ func uploadHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	
+	mu.Lock()
+	total_bytes+= len(fileData)
+	total_uploads+=1
+	mu.Unlock()
+
 	
 	
 	resp := response{
@@ -58,8 +66,33 @@ func uploadHandler(w http.ResponseWriter, r *http.Request){
 	encoder.Encode(resp)
 }
 
+func statsHandler(w http.ResponseWriter, r *http.Request){
+	if r.Method!="GET"{
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	mu.Lock()
+	resp := FileStats{
+		Uploads: total_uploads,
+		TotalBytes: total_bytes,
+	}
+	mu.Unlock()
+	w.Header().Set("Content-Type","application/json")
+	encoder := json.NewEncoder(w)
+	encoder.SetIndent("", "    ")
+	encoder.Encode(resp)
+}
+
+
+
 type response struct{
 		Filename string `json:"filename"`
 		FileSize int    `json:"filesize"`
 		DetectedType string `json:"detected_type"`
 	}
+
+type FileStats struct{
+	Uploads int `json:"total_uploads"`
+	TotalBytes int `json:"total_bytes"`
+}
+
